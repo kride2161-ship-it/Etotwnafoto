@@ -98,7 +98,7 @@
     <!-- ЭКРАН 2: Страшный розыгрыш (теперь с фото и авто-переходом) -->
     <div id="screen-spooky" class="hidden h-screen flex flex-col items-center justify-center bg-black p-8 text-center">
         <div class="space-y-8 flex flex-col items-center ios-fade">
-            <img src="https://i.postimg.cc/1njcYcp6/spooky.jpg" alt="[Изображение страха]" class="spooky-photo mb-4">
+            <img id="spooky-image" src="https://i.postimg.cc/1njcYcp6/spooky.jpg" alt="[Изображение страха]" class="spooky-photo mb-4">
             <h2 class="text-3xl md:text-5xl font-black spooky-text-anim uppercase tracking-tighter">
                 Я знаю где ты живёшь,<br>от меня не спрятаться
             </h2>
@@ -133,6 +133,20 @@
         "https://i.postimg.cc/1VsYsK8L/6.jpg"
     ];
 
+    function setImageWithFallback(imgElement, url, fallbackText) {
+        const loader = new Image();
+
+        loader.onload = () => {
+            imgElement.src = url;
+        };
+
+        loader.onerror = () => {
+            imgElement.src = `https://via.placeholder.com/500x500?text=${encodeURIComponent(fallbackText)}`;
+        };
+
+        loader.src = url;
+    }
+
     function goToGallery() {
         document.body.style.overflow = 'auto';
         document.getElementById('screen-start').classList.add('hidden');
@@ -150,13 +164,16 @@
             card.style.animationDelay = (i * 0.1) + 's';
             card.innerHTML = `
                 <div class="img-wrap">
-                    <img src="${url}" alt="Фото ${i+1}" onerror="this.src='https://via.placeholder.com/500?text=Error'">
+                    <img id="img-${i}" alt="Фото ${i+1}">
                 </div>
                 <div class="mt-4">
                     <span class="text-zinc-300 font-black italic uppercase text-[10px] tracking-[0.2em]">Moment #${i+1}</span>
                 </div>
             `;
             grid.appendChild(card);
+
+            const imgElement = card.querySelector(`#img-${i}`);
+            setImageWithFallback(imgElement, url, `Error ${i + 1}`);
         });
     }
 
@@ -166,6 +183,9 @@
         spookyScreen.classList.remove('hidden');
         spookyScreen.classList.add('ios-fade');
 
+        const spookyImg = document.getElementById('spooky-image');
+        setImageWithFallback(spookyImg, spookyImg.getAttribute('src'), 'Error');
+
         // Автономный переход обратно в главное меню через 3.5 секунды
         setTimeout(() => {
             spookyScreen.classList.add('hidden');
@@ -174,8 +194,13 @@
             startScreen.classList.add('ios-fade');
         }, 3500);
     }
+
+    // Подгружаем страшную картинку сразу, чтобы логика была стабильной
+    document.addEventListener('DOMContentLoaded', () => {
+        const spookyImg = document.getElementById('spooky-image');
+        setImageWithFallback(spookyImg, spookyImg.getAttribute('src'), 'Error');
+    });
 </script>
 
 </body>
 </html>
-
