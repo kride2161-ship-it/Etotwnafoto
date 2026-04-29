@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Посмотри скорее...</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            margin: 0;
+            color: white;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Анимация появления в стиле iOS */
+        .ios-fade {
+            animation: iosAppear 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            opacity: 0;
+            filter: blur(15px);
+            transform: scale(0.9);
+        }
+
+        @keyframes iosAppear {
+            to { opacity: 1; filter: blur(0); transform: scale(1); }
+        }
+
+        .spooky-text-anim {
+            animation: pulse-red 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-red {
+            0% { color: #fff; text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+            100% { color: #ff0000; text-shadow: 0 0 20px rgba(255, 0, 0, 1); }
+        }
+
+        .gallery-gradient {
+            background: linear-gradient(180deg, #ffffff 0%, #f4f7f6 100%);
+            min-height: 100vh;
+            color: #1c1c1e;
+            overflow-y: auto;
+        }
+
+        .photo-card {
+            background: #fff;
+            padding: 12px;
+            border-radius: 28px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .photo-card:hover {
+            transform: translateY(-12px) scale(1.03);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+        }
+
+        .img-wrap {
+            width: 100%;
+            aspect-ratio: 1/1;
+            overflow: hidden;
+            border-radius: 20px;
+            background: #f2f2f7;
+        }
+
+        .img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Стиль для страшного фото */
+        .spooky-photo {
+            width: 300px;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 10px;
+            filter: grayscale(1) contrast(1.5);
+            box-shadow: 0 0 50px rgba(255,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <!-- ЭКРАН 1: Вопрос -->
+    <div id="screen-start" class="h-screen flex flex-col items-center justify-center p-6 text-center ios-fade">
+        <h1 class="text-4xl md:text-5xl font-light mb-16 tracking-tight text-zinc-200">Ты готова?</h1>
+        <div class="flex flex-col sm:flex-row gap-6 w-full max-w-xs sm:max-w-none justify-center">
+            <button onclick="goToGallery()" class="px-14 py-4 bg-white text-black rounded-3xl font-bold text-xl shadow-2xl active:scale-90 transition-transform">Да</button>
+            <button onclick="goToSpooky()" class="px-14 py-4 bg-zinc-900 text-zinc-500 rounded-3xl font-bold text-xl border border-zinc-800 active:scale-90 transition-transform">Нет</button>
+        </div>
+    </div>
+
+    <!-- ЭКРАН 2: Страшный розыгрыш (теперь с фото и авто-переходом) -->
+    <div id="screen-spooky" class="hidden h-screen flex flex-col items-center justify-center bg-black p-8 text-center">
+        <div class="space-y-8 flex flex-col items-center ios-fade">
+            <img src="https://i.postimg.cc/1njcYcp6/spooky.jpg" alt="[Изображение страха]" class="spooky-photo mb-4">
+            <h2 class="text-3xl md:text-5xl font-black spooky-text-anim uppercase tracking-tighter">
+                Я знаю где ты живёшь,<br>от меня не спрятаться
+            </h2>
+        </div>
+    </div>
+
+    <!-- ЭКРАН 3: Праздничная галерея -->
+    <div id="screen-gallery" class="hidden gallery-gradient p-6 md:p-12">
+        <div class="max-w-6xl mx-auto text-center py-6">
+            <p class="text-zinc-400 text-xl mb-2 font-medium">Я тебя не обманул.</p>
+            <h1 class="text-5xl md:text-8xl font-black mb-6 text-zinc-900 tracking-tighter">С днём рождения, Маша!</h1>
+            <div class="inline-block bg-gradient-to-r from-blue-500 to-teal-400 text-white px-8 py-3 rounded-2xl font-black text-2xl mb-12 shadow-lg transform rotate-1">
+                С ПЕРВЫМ ЮБИЛЕЕМ! 10 ЛЕТ! 🎉
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10" id="gallery-grid">
+                <!-- Фото подгрузятся из JS -->
+            </div>
+            
+            <p class="mt-24 text-zinc-300 italic font-medium">Самый добрый розыгрыш в мире ✨</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const images = [
+        "https://i.postimg.cc/34vHd9rb/1.jpg",
+        "https://i.postimg.cc/gx2FvGkN/2.jpg",
+        "https://i.postimg.cc/fSfp9rGg/3.jpg",
+        "https://i.postimg.cc/CzJ9M9H1/4.jpg",
+        "https://i.postimg.cc/K1HVBLWT/5.jpg",
+        "https://i.postimg.cc/1VsYsK8L/6.jpg"
+    ];
+
+    function goToGallery() {
+        document.body.style.overflow = 'auto';
+        document.getElementById('screen-start').classList.add('hidden');
+        document.getElementById('screen-spooky').classList.add('hidden');
+        const gallery = document.getElementById('screen-gallery');
+        gallery.classList.remove('hidden');
+        gallery.classList.add('ios-fade');
+
+        const grid = document.getElementById('gallery-grid');
+        grid.innerHTML = '';
+
+        images.forEach((url, i) => {
+            const card = document.createElement('div');
+            card.className = 'photo-card ios-fade';
+            card.style.animationDelay = (i * 0.1) + 's';
+            card.innerHTML = `
+                <div class="img-wrap">
+                    <img src="${url}" alt="Фото ${i+1}" onerror="this.src='https://via.placeholder.com/500?text=Error'">
+                </div>
+                <div class="mt-4">
+                    <span class="text-zinc-300 font-black italic uppercase text-[10px] tracking-[0.2em]">Moment #${i+1}</span>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function goToSpooky() {
+        document.getElementById('screen-start').classList.add('hidden');
+        const spookyScreen = document.getElementById('screen-spooky');
+        spookyScreen.classList.remove('hidden');
+        spookyScreen.classList.add('ios-fade');
+
+        // Автономный переход обратно в главное меню через 3.5 секунды
+        setTimeout(() => {
+            spookyScreen.classList.add('hidden');
+            const startScreen = document.getElementById('screen-start');
+            startScreen.classList.remove('hidden');
+            startScreen.classList.add('ios-fade');
+        }, 3500);
+    }
+</script>
+
+</body>
+</html>
+
